@@ -1,0 +1,4 @@
+#Ignore any vscode related directories
+.vscode/
+#Ignore the bin directory
+.bin/
