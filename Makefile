@@ -16,7 +16,7 @@ all: ./bin/os.bin
 	nasm -f bin ./bootloader/$(ARCH)/boot.asm -o ./bin/boot.bin
 
 # Kernel
-# Note: Order of those matter V
+# Note: Order of those matters V
 KERNEL_SOURCES = ./kernel/arch/$(ARCH)/kernel.asm ./kernel/kernel.c
 OBJS = $(patsubst ./kernel/%.c,./build/%.o,$(patsubst ./kernel/%.asm,./build/%.o,$(KERNEL_SOURCES)))
 
