@@ -1,0 +1,10 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+//100 MB heap (NOTE :For testing only)
+#define SATAN_HEAP_SIZE_BYTES 104857600
+#define SATAN_HEAP_ADDRESS 0x01000000
+#define SATAN_HEAP_BLOCK_SIZE 4096
+#define SATAN_HEAP_TABLE_ADDRESS 0x00007E00
+
+#endif

@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "memory/heap/kheap.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -68,13 +69,13 @@ size_t strlen(const char * str) {
 }
 
 
-void print(const char * str , char colour) {
+void print(const char * str) {
 
     size_t len = strlen(str);
 
     for(size_t i = 0; i < len; i++) {
 
-        terminal_writechar(str[i] , colour);
+        terminal_writechar(str[i] , 15);
 
     }
 
@@ -84,6 +85,10 @@ void kernel_main() {
 
     
     terminal_initialize();
-    print("Hello satan!" , 15);
-    
+    print("Hello satan!\n");
+
+    //Initialize the kernel heap
+    kheap_init();
+
+
 }
