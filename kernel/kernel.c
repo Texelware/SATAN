@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "memory/heap/kheap.h"
+#include "idt/idt.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -81,6 +82,7 @@ void print(const char * str) {
 
 }
 
+
 void kernel_main() {
 
     
@@ -89,6 +91,9 @@ void kernel_main() {
 
     //Initialize the kernel heap
     kheap_init();
+
+    //Initialize the Interrupt Descriptor Table
+    idt_init();
 
 
 }
