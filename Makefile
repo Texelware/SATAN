@@ -1,4 +1,4 @@
-FILES = ./build/kernel.asm.o ./build/kernel.o ./build/memory/memory.o ./build/idt/idt.asm.o ./build/idt/idt.o ./build/memory/heap/heap.o ./build/memory/heap/kheap.o
+FILES = ./build/kernel.asm.o ./build/kernel.o ./build/memory/memory.o ./build/idt/idt.asm.o ./build/idt/idt.o ./build/io/io.asm.o ./build/memory/heap/heap.o ./build/memory/heap/kheap.o
 INCLUDES = -I./kernel
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
@@ -29,6 +29,10 @@ all: ./bin/boot.bin ./bin/kernel.bin
 
 ./build/idt/idt.o: ./kernel/idt/idt.c
 	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c ./kernel/idt/idt.c -o ./build/idt/idt.o
+
+./build/io/io.asm.o: ./kernel/io/io.asm
+	mkdir -p build/io
+	nasm -f elf -g ./kernel/io/io.asm -o ./build/io/io.asm.o
 
 ./build/memory/memory.o: ./kernel/memory/memory.c
 	mkdir -p build/memory

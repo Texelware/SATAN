@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "memory/heap/kheap.h"
 #include "idt/idt.h"
+#include "io/io.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -95,5 +96,6 @@ void kernel_main() {
     //Initialize the Interrupt Descriptor Table
     idt_init();
 
+    
 
 }
