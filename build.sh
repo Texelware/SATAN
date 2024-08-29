@@ -4,20 +4,41 @@ export ARCH=x86
 export TOOLCHAIN=i686-elf
 export QEMU_SYSTEM=x86_64
 
+# Colors
+if command -v tput &> /dev/null; then
+    ncolors=$(tput colors)
+    if [ -n "$ncolors" ] && [ $ncolors -ge 8 ]; then
+		bold="$(tput bold)"
+        underline="$(tput smul)"
+        standout="$(tput smso)"
+        normal="$(tput sgr0)"
+        black="$(tput setaf 0)"
+        red="$(tput setaf 1)"
+        green="$(tput setaf 2)"
+        yellow="$(tput setaf 3)"
+        blue="$(tput setaf 4)"
+        magenta="$(tput setaf 5)"
+        cyan="$(tput setaf 6)"
+        white="$(tput setaf 7)"
+	fi
+fi
+
 # Makefile
 generateMakefile() {
-	echo Regenerating Makefile...
-	c_files=()
+	echo "${green}Regenerating Makefile...${normal}"
 	asm_files=(kernel/kernel.asm)
+	c_files=()
 	objects=(build/kernel.asm.o)
+
+	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm); do
+		asm_files+=($file)
+		objects+=(build${file#kernel}.o)
+	done
+
 	for file in $(find kernel -type f -name '*.c'); do
 		c_files+=($file)
 		object=${file#kernel}
 		objects+=(build${object%.c}.o)
-	done
-	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm); do
-		asm_files+=($file)
-		objects+=(build${file#kernel}.o)
 	done
 
 	TAB="$(printf '\t')"
@@ -35,7 +56,7 @@ generateMakefile() {
 	${TAB}@echo
 
 	bin/os.bin: bin/boot.bin bin/kernel.bin
-	${TAB}@echo Building the system...
+	${TAB}@echo "${green}Building the system...${normal}"
 	${TAB}@rm -rf bin/os.bin
 	${TAB}@dd if=bin/boot.bin >> bin/os.bin
 	${TAB}@dd if=bin/kernel.bin >> bin/os.bin
@@ -43,41 +64,47 @@ generateMakefile() {
 	${TAB}@echo Done!
 
 	bin/kernel.bin: \$(OBJECTS)
-	${TAB}@echo Building the kernel...
+	${TAB}@echo "${green}Building the kernel...${normal}"
 	${TAB}@\$(TOOLCHAIN)-ld -g -relocatable \$(OBJECTS) -o build/kernelfull.o
 	${TAB}@\$(TOOLCHAIN)-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O0 -nostdlib build/kernelfull.o
 
 	bin/boot.bin: bootloader/\$(ARCH)/boot.asm
-	${TAB}@echo Building the bootloader...
+	${TAB}@echo "${green}Building the bootloader...${normal}"
 	${TAB}@mkdir -p bin
 	${TAB}@nasm -f bin bootloader/\$(ARCH)/boot.asm -o bin/boot.bin
 	EOF
+
+	((total=${#asm_files[@]} + ${#c_files[@]}))
+	progress=0
+	for file in "${asm_files[@]}"; do
+		object=(build${file#kernel}.o)
+		cat >> Makefile <<-EOF
+		$object: $file
+		${TAB}@echo "${green}[$((progress * 100 / total))%]${normal} Building $file..."
+		${TAB}@mkdir -p $(dirname "$object")
+		${TAB}@nasm -f elf -g $file -o $object
+
+		EOF
+		((progress++))
+	done
 
 	for file in "${c_files[@]}"; do
 		object=${file%.c}
 		object=build${object#kernel}.o
 		cat >> Makefile <<-EOF
 		$object: $file
-		${TAB}@echo Building $file...
+		${TAB}@echo "${green}[$((progress * 100 / total))%]${normal} Building $file..."
 		${TAB}@mkdir -p $(dirname "$object")
 		${TAB}@\$(TOOLCHAIN)-gcc \$(INCLUDES) \$(FLAGS) -std=gnu99 -c $file -o $object
 
 		EOF
+		((progress++))
 	done
 
-	for file in "${asm_files[@]}"; do
-		object=(build${file#kernel}.o)
-		cat >> Makefile <<-EOF
-		$object: $file
-		${TAB}@echo Building $file...
-		${TAB}@mkdir -p $(dirname "$object")
-		${TAB}@nasm -f elf -g $file -o $object
-
-		EOF
-	done
-	echo Done!
+	echo "${green}Done!${normal}"
 }
 
+# Utils
 build() {
 	generateMakefile
 	make
@@ -118,6 +145,7 @@ command() {
 		clean)  make clean;;
 		help)  help;;
 		quit|exit|q)  exit 0;;
+		*) echo -e "Unknown command $1.\nUse help to see the available options";;
 	esac
 }
 
@@ -140,6 +168,7 @@ repl() {
  	done
 }
 
+# Main
 POSITIONAL_ARGS=()
 
 while [[ $# -gt 0 ]]; do
