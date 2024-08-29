@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# TODO: kernel/config.h, kernel/memory/paging
 
 export ARCH=x86
 export TOOLCHAIN=i686-elf
