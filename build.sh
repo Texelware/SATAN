@@ -1,6 +1,119 @@
-#/bin/bash
-export PREFIX="$HOME/opt/cross"
-export TARGET=i686-elf
-export PATH="$PREFIX/bin:$PATH"
+#!/usr/bin/env bash
 
-make all
+export ARCH=x86
+export TOOLCHAIN=i686-elf
+export QEMU_SYSTEM=x86_64
+
+# Makefile
+generateMakefile() {
+	echo Regenerating Makefile...
+	c_files=()
+	asm_files=(kernel/kernel.asm)
+	objects=(build/kernel.asm.o)
+	for file in $(find kernel -type f -name '*.c'); do
+		c_files+=($file)
+		object=${file#kernel}
+		objects+=(build${object%.c}.o)
+	done
+	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm); do
+		asm_files+=($file)
+		objects+=(build${file#kernel}.o)
+	done
+
+	TAB="$(printf '\t')"
+	cat > Makefile <<-EOF
+	OBJECTS = ${objects[*]}
+	FLAGS = -Ikernel
+	LINKER_FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
+	.PHONY: all
+	all: bin/os.bin
+
+	.PHONY: clean
+	clean:
+	${TAB}@rm -rf bin
+	${TAB}@rm -rf build
+	${TAB}@echo
+
+	bin/os.bin: bin/boot.bin bin/kernel.bin
+	${TAB}@echo Building the system...
+	${TAB}@rm -rf bin/os.bin
+	${TAB}@dd if=bin/boot.bin >> bin/os.bin
+	${TAB}@dd if=bin/kernel.bin >> bin/os.bin
+	${TAB}@dd if=/dev/zero bs=512 count=100 >> bin/os.bin
+	${TAB}@echo Done!
+
+	bin/kernel.bin: \$(OBJECTS)
+	${TAB}@echo Building the kernel...
+	${TAB}@\$(TOOLCHAIN)-ld -g -relocatable \$(OBJECTS) -o build/kernelfull.o
+	${TAB}@\$(TOOLCHAIN)-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O0 -nostdlib build/kernelfull.o
+
+	bin/boot.bin: bootloader/\$(ARCH)/boot.asm
+	${TAB}@echo Building the bootloader...
+	${TAB}@mkdir -p bin
+	${TAB}@nasm -f bin bootloader/\$(ARCH)/boot.asm -o bin/boot.bin
+	EOF
+
+	for file in "${c_files[@]}"; do
+		object=${file%.c}
+		object=build${object#kernel}.o
+		cat >> Makefile <<-EOF
+		$object: $file
+		${TAB}@echo Building $file...
+		${TAB}@mkdir -p $(dirname "$object")
+		${TAB}@\$(TOOLCHAIN)-gcc \$(INCLUDES) \$(FLAGS) -std=gnu99 -c $file -o $object
+
+		EOF
+	done
+
+	for file in "${asm_files[@]}"; do
+		object=(build${file#kernel}.o)
+		cat >> Makefile <<-EOF
+		$object: $file
+		${TAB}@echo Building $file...
+		${TAB}@mkdir -p $(dirname "$object")
+		${TAB}@nasm -f elf -g $file -o $object
+
+		EOF
+	done
+	echo Done!
+}
+
+build() {
+	generateMakefile
+	make
+}
+
+command() {
+	case $1 in
+		generate|regenerate) generateMakefile;;
+		build) build;;
+		run) build && qemu-system-$QEMU_SYSTEM bin/os.bin;;
+		clean)  make clean;;
+		quit|exit|q)  exit 0;;
+	esac
+}
+
+repl() {
+	cat <<-"EOF"
+	 .oooooo..o       .o.       ooooooooooooo       .o.       ooooo      ooo
+	d8P'    `Y8      .888.      8'   888   `8      .888.      `888b.     `8'
+	Y88bo.          .8"888.          888          .8"888.      8 `88b.    8
+	 `"Y8888o.     .8' `888.         888         .8' `888.     8   `88b.  8
+	     `"Y88b   .88ooo8888.        888        .88ooo8888.    8     `88b.8
+	oo     .d8P  .8'     `888.       888       .8'     `888.   8       `888
+	8""88888P'  o88o     o8888o     o888o     o88o     o8888o o8o        `8
+	
+	Type help for list of availble commands
+	EOF
+ 	while true; do
+ 		printf "> "
+ 		read line
+ 		command $line
+ 	done
+}
+
+if [ $# -gt 0 ]; then
+	command "$@"
+else
+	repl
+fi
