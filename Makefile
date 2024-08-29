@@ -1,6 +1,6 @@
-OBJECTS = build/kernel.asm.o build/memory/paging/paging.asm.o build/io/io.asm.o build/idt/idt.asm.o build/kernel.o build/memory/heap/heap.o build/memory/heap/kheap.o build/memory/memory.o build/memory/paging/paging.o build/idt/idt.o
-FLAGS = -Ikernel
-LINKER_FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
+OBJECTS = build/arch/x86/kernel.asm.o build/memory/paging/paging.asm.o build/io/io.asm.o build/idt/idt.asm.o build/kernel.o build/memory/heap/heap.o build/memory/heap/kheap.o build/memory/memory.o build/memory/paging/paging.o build/idt/idt.o
+FLAGS = -Ikernel -I"kernel/arch/x86"
+LINKER_FLAGS = -O0
 .PHONY: all
 all: bin/os.bin
 
@@ -20,17 +20,17 @@ bin/os.bin: bin/boot.bin bin/kernel.bin
 
 bin/kernel.bin: $(OBJECTS)
 	@echo "[32mBuilding the kernel...(B[m"
-	@$(TOOLCHAIN)-ld -g -relocatable $(OBJECTS) -o build/kernelfull.o
-	@$(TOOLCHAIN)-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O0 -nostdlib build/kernelfull.o
+	@$(TOOLCHAIN)-ld $(LINKER_FLAGS) -g -relocatable $(OBJECTS) -o build/kernelfull.o
+	@$(TOOLCHAIN)-gcc $(LINKER_FLAGS) -T linker.ld -o bin/kernel.bin -ffreestanding -nostdlib build/kernelfull.o
 
-bin/boot.bin: bootloader/$(ARCH)/boot.asm
+bin/boot.bin: bootloader/x86/boot.asm
 	@echo "[32mBuilding the bootloader...(B[m"
 	@mkdir -p bin
-	@nasm -f bin bootloader/$(ARCH)/boot.asm -o bin/boot.bin
-build/kernel.asm.o: kernel/kernel.asm
-	@echo "[32m[0%](B[m Building kernel/kernel.asm..."
-	@mkdir -p build
-	@nasm -f elf -g kernel/kernel.asm -o build/kernel.asm.o
+	@nasm -f bin bootloader/x86/boot.asm -o bin/boot.bin
+build/arch/x86/kernel.asm.o: kernel/arch/x86/kernel.asm
+	@echo "[32m[0%](B[m Building kernel/arch/x86/kernel.asm..."
+	@mkdir -p build/arch/x86
+	@nasm -f elf -g kernel/arch/x86/kernel.asm -o build/arch/x86/kernel.asm.o
 
 build/memory/paging/paging.asm.o: kernel/memory/paging/paging.asm
 	@echo "[32m[10%](B[m Building kernel/memory/paging/paging.asm..."

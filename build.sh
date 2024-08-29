@@ -26,11 +26,11 @@ fi
 # Makefile
 generateMakefile() {
 	echo "${green}Regenerating Makefile...${normal}"
-	asm_files=(kernel/kernel.asm)
+	asm_files=("kernel/arch/$ARCH/kernel.asm")
 	c_files=()
-	objects=(build/kernel.asm.o)
+	objects=("build/arch/$ARCH/kernel.asm.o")
 
-	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm); do
+	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm \( -path "kernel/arch/$ARCH/*" -o ! -path "kernel/arch/*" \)); do
 		asm_files+=($file)
 		objects+=(build${file#kernel}.o)
 	done
@@ -44,8 +44,8 @@ generateMakefile() {
 	TAB="$(printf '\t')"
 	cat > Makefile <<-EOF
 	OBJECTS = ${objects[*]}
-	FLAGS = -Ikernel
-	LINKER_FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
+	FLAGS = -Ikernel -I"kernel/arch/$ARCH"
+	LINKER_FLAGS = -O0
 	.PHONY: all
 	all: bin/os.bin
 
@@ -65,13 +65,13 @@ generateMakefile() {
 
 	bin/kernel.bin: \$(OBJECTS)
 	${TAB}@echo "${green}Building the kernel...${normal}"
-	${TAB}@\$(TOOLCHAIN)-ld -g -relocatable \$(OBJECTS) -o build/kernelfull.o
-	${TAB}@\$(TOOLCHAIN)-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O0 -nostdlib build/kernelfull.o
+	${TAB}@\$(TOOLCHAIN)-ld \$(LINKER_FLAGS) -g -relocatable \$(OBJECTS) -o build/kernelfull.o
+	${TAB}@\$(TOOLCHAIN)-gcc \$(LINKER_FLAGS) -T linker.ld -o bin/kernel.bin -ffreestanding -nostdlib build/kernelfull.o
 
-	bin/boot.bin: bootloader/\$(ARCH)/boot.asm
+	bin/boot.bin: bootloader/$ARCH/boot.asm
 	${TAB}@echo "${green}Building the bootloader...${normal}"
 	${TAB}@mkdir -p bin
-	${TAB}@nasm -f bin bootloader/\$(ARCH)/boot.asm -o bin/boot.bin
+	${TAB}@nasm -f bin bootloader/$ARCH/boot.asm -o bin/boot.bin
 	EOF
 
 	((total=${#asm_files[@]} + ${#c_files[@]}))
