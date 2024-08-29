@@ -83,12 +83,40 @@ build() {
 	make
 }
 
+run() {
+	qemu-system-$QEMU_SYSTEM -drive file=bin/os.bin,format=raw
+}
+
+print() {
+	echo "ARCH: $ARCH"
+	echo "TOOLCHAIN: $TOOLCHAIN"
+	echo "QEMU System: $QEMU_SYSTEM"
+}
+
+help() {
+	cat <<-EOF
+	SATAN Build system
+	Usage: ./build.sh [--arch x86] [--toolchain i686-elf] [--quemu-system x86_64] [command]
+	When ran without command, REPL mode will be entered
+	Commands:
+	generate/regenerate - (re)generate the Makefile
+	build - (re)generate the Makefile and build the OS
+	run - build and run the OS
+	print - print current parameters
+	clean - remove all build artifacts
+	help - show this message
+	quit/exit/q - exit REPL
+	EOF
+}
+
 command() {
 	case $1 in
 		generate|regenerate) generateMakefile;;
 		build) build;;
-		run) build && qemu-system-$QEMU_SYSTEM bin/os.bin;;
+		run) build && run;;
+		print) print;;
 		clean)  make clean;;
+		help)  help;;
 		quit|exit|q)  exit 0;;
 	esac
 }
@@ -112,6 +140,42 @@ repl() {
  	done
 }
 
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		--arch)
+			export ARCH="$2"
+			shift
+			shift
+		;;
+		--toolchain)
+			export TOOLCHAIN="$2"
+			shift
+			shift
+		;;
+		--qemu-system)
+			export QEMU_SYSTEM="$2"
+			shift
+			shift
+		;;
+		-h|--help)
+			help
+			exit 0
+		;;
+		-*|--*)
+			echo "Unknown option $1"
+			echo "Use help to see the available options"
+			exit 1
+		;;
+    *)
+      POSITIONAL_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}"
 if [ $# -gt 0 ]; then
 	command "$@"
 else
