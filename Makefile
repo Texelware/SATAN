@@ -1,4 +1,4 @@
-OBJECTS = build/arch/x86/kernel.asm.o build/memory/paging/paging.asm.o build/arch/x86/io/io.asm.o build/arch/x86/idt/idt.asm.o build/kernel.o build/memory/heap/heap.o build/memory/heap/kheap.o build/memory/memory.o build/memory/paging/paging.o build/arch/x86/idt/idt.o
+OBJECTS = build/arch/x86/kernel.asm.o build/arch/x86/memory/paging/paging.asm.o build/arch/x86/io/io.asm.o build/arch/x86/idt/idt.asm.o build/kernel.o build/memory/heap/heap.o build/memory/heap/kheap.o build/memory/memory.o build/arch/x86/memory/paging/paging.o build/arch/x86/idt/idt.o
 FLAGS = -Ikernel -I"kernel/arch/x86"
 LINKER_FLAGS = -O0
 .PHONY: all
@@ -32,10 +32,10 @@ build/arch/x86/kernel.asm.o: kernel/arch/x86/kernel.asm
 	@mkdir -p build/arch/x86
 	@nasm -f elf -g kernel/arch/x86/kernel.asm -o build/arch/x86/kernel.asm.o
 
-build/memory/paging/paging.asm.o: kernel/memory/paging/paging.asm
-	@echo "[32m[10%](B[m Building kernel/memory/paging/paging.asm..."
-	@mkdir -p build/memory/paging
-	@nasm -f elf -g kernel/memory/paging/paging.asm -o build/memory/paging/paging.asm.o
+build/arch/x86/memory/paging/paging.asm.o: kernel/arch/x86/memory/paging/paging.asm
+	@echo "[32m[10%](B[m Building kernel/arch/x86/memory/paging/paging.asm..."
+	@mkdir -p build/arch/x86/memory/paging
+	@nasm -f elf -g kernel/arch/x86/memory/paging/paging.asm -o build/arch/x86/memory/paging/paging.asm.o
 
 build/arch/x86/io/io.asm.o: kernel/arch/x86/io/io.asm
 	@echo "[32m[20%](B[m Building kernel/arch/x86/io/io.asm..."
@@ -67,10 +67,10 @@ build/memory/memory.o: kernel/memory/memory.c
 	@mkdir -p build/memory
 	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/memory.c -o build/memory/memory.o
 
-build/memory/paging/paging.o: kernel/memory/paging/paging.c
-	@echo "[32m[80%](B[m Building kernel/memory/paging/paging.c..."
-	@mkdir -p build/memory/paging
-	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/paging/paging.c -o build/memory/paging/paging.o
+build/arch/x86/memory/paging/paging.o: kernel/arch/x86/memory/paging/paging.c
+	@echo "[32m[80%](B[m Building kernel/arch/x86/memory/paging/paging.c..."
+	@mkdir -p build/arch/x86/memory/paging
+	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/arch/x86/memory/paging/paging.c -o build/arch/x86/memory/paging/paging.o
 
 build/arch/x86/idt/idt.o: kernel/arch/x86/idt/idt.c
 	@echo "[32m[90%](B[m Building kernel/arch/x86/idt/idt.c..."

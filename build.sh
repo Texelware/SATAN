@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# TODO: kernel/config.h, kernel/memory/paging
 
 export ARCH=x86
 export TOOLCHAIN=i686-elf
@@ -164,7 +163,7 @@ repl() {
 	EOF
  	while true; do
  		printf "> "
- 		read line
+ 		read -e line
  		command $line
  	done
 }
