@@ -84,11 +84,10 @@ void print(const char * str) {
 
 }
 
-static struct paging_4gb_chunk* kernel_chunk = 0;
+static struct page_table *kernel_address_space = 0;
 
-void kernel_main() {
-
-    
+void kernel_main()
+{
     terminal_initialize();
     print("Hello satan!\n");
 
@@ -97,22 +96,20 @@ void kernel_main() {
 
     //Initialize the Interrupt Descriptor Table
     idt_init();
+    //Enable interrupts
+    enable_interrupts();
 
     // Setup paging
-    kernel_chunk = paging_new_4gb(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
-    
-    // Switch to kernel paging chunk
-    paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
-
-    char* ptr = kzalloc(4096); 
-    paging_set(paging_4gb_chunk_get_directory(kernel_chunk), (void*)0x1000, (uint32_t)ptr | PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
-
+    kernel_address_space = paging_new_table(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+    paging_set(kernel_address_space, 0x1000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
+    paging_set(kernel_address_space, 0x2000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
+    paging_switch(kernel_address_space);
 
     // Enable paging
     enable_paging();
 
 
-    char* testPtr = (char*)0x1000;
+    char *testPtr = (char*)0x1000;
 
     testPtr[0] = 's';
     testPtr[1] = 'a';
@@ -121,9 +118,5 @@ void kernel_main() {
     testPtr[4] = 'n';
     testPtr[5] = '\n';
 
-    print(testPtr);
-
-    //Enable interrupts
-    enable_interrupts();
-
+    print((char*)0x2000);
 }
