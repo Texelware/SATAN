@@ -1,5 +1,6 @@
-OBJECTS = build/arch/x86/kernel.asm.o build/arch/x86/memory/paging/paging.asm.o build/arch/x86/io/io.asm.o build/arch/x86/idt/idt.asm.o build/kernel.o build/memory/heap/heap.o build/memory/heap/kheap.o build/memory/memory.o build/arch/x86/memory/paging/paging.o build/arch/x86/idt/idt.o
-FLAGS = -Ikernel -I"kernel/arch/x86"
+OBJECTS = build/arch/x86/kernel.asm.o build/arch/x86/memory/paging/paging.asm.o build/arch/x86/idt/idt.asm.o build/arch/x86/io/io.asm.o build/arch/x86/memory/paging/paging.o build/arch/x86/idt/idt.o build/memory/memory.o build/memory/heap/kheap.o build/memory/heap/heap.o build/kernel.o
+    INCLUDES = -I./kernel/arch/x86
+FLAGS = -Ikernel -I"kernel/arch/x86 " -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 LINKER_FLAGS = -O0
 .PHONY: all
 all: bin/os.bin
@@ -37,43 +38,43 @@ build/arch/x86/memory/paging/paging.asm.o: kernel/arch/x86/memory/paging/paging.
 	@mkdir -p build/arch/x86/memory/paging
 	@nasm -f elf -g kernel/arch/x86/memory/paging/paging.asm -o build/arch/x86/memory/paging/paging.asm.o
 
-build/arch/x86/io/io.asm.o: kernel/arch/x86/io/io.asm
-	@echo "[32m[20%](B[m Building kernel/arch/x86/io/io.asm..."
-	@mkdir -p build/arch/x86/io
-	@nasm -f elf -g kernel/arch/x86/io/io.asm -o build/arch/x86/io/io.asm.o
-
 build/arch/x86/idt/idt.asm.o: kernel/arch/x86/idt/idt.asm
-	@echo "[32m[30%](B[m Building kernel/arch/x86/idt/idt.asm..."
+	@echo "[32m[20%](B[m Building kernel/arch/x86/idt/idt.asm..."
 	@mkdir -p build/arch/x86/idt
 	@nasm -f elf -g kernel/arch/x86/idt/idt.asm -o build/arch/x86/idt/idt.asm.o
 
-build/kernel.o: kernel/kernel.c
-	@echo "[32m[40%](B[m Building kernel/kernel.c..."
-	@mkdir -p build
-	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/kernel.c -o build/kernel.o
-
-build/memory/heap/heap.o: kernel/memory/heap/heap.c
-	@echo "[32m[50%](B[m Building kernel/memory/heap/heap.c..."
-	@mkdir -p build/memory/heap
-	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/heap/heap.c -o build/memory/heap/heap.o
-
-build/memory/heap/kheap.o: kernel/memory/heap/kheap.c
-	@echo "[32m[60%](B[m Building kernel/memory/heap/kheap.c..."
-	@mkdir -p build/memory/heap
-	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/heap/kheap.c -o build/memory/heap/kheap.o
-
-build/memory/memory.o: kernel/memory/memory.c
-	@echo "[32m[70%](B[m Building kernel/memory/memory.c..."
-	@mkdir -p build/memory
-	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/memory.c -o build/memory/memory.o
+build/arch/x86/io/io.asm.o: kernel/arch/x86/io/io.asm
+	@echo "[32m[30%](B[m Building kernel/arch/x86/io/io.asm..."
+	@mkdir -p build/arch/x86/io
+	@nasm -f elf -g kernel/arch/x86/io/io.asm -o build/arch/x86/io/io.asm.o
 
 build/arch/x86/memory/paging/paging.o: kernel/arch/x86/memory/paging/paging.c
-	@echo "[32m[80%](B[m Building kernel/arch/x86/memory/paging/paging.c..."
+	@echo "[32m[40%](B[m Building kernel/arch/x86/memory/paging/paging.c..."
 	@mkdir -p build/arch/x86/memory/paging
 	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/arch/x86/memory/paging/paging.c -o build/arch/x86/memory/paging/paging.o
 
 build/arch/x86/idt/idt.o: kernel/arch/x86/idt/idt.c
-	@echo "[32m[90%](B[m Building kernel/arch/x86/idt/idt.c..."
+	@echo "[32m[50%](B[m Building kernel/arch/x86/idt/idt.c..."
 	@mkdir -p build/arch/x86/idt
 	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/arch/x86/idt/idt.c -o build/arch/x86/idt/idt.o
+
+build/memory/memory.o: kernel/memory/memory.c
+	@echo "[32m[60%](B[m Building kernel/memory/memory.c..."
+	@mkdir -p build/memory
+	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/memory.c -o build/memory/memory.o
+
+build/memory/heap/kheap.o: kernel/memory/heap/kheap.c
+	@echo "[32m[70%](B[m Building kernel/memory/heap/kheap.c..."
+	@mkdir -p build/memory/heap
+	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/heap/kheap.c -o build/memory/heap/kheap.o
+
+build/memory/heap/heap.o: kernel/memory/heap/heap.c
+	@echo "[32m[80%](B[m Building kernel/memory/heap/heap.c..."
+	@mkdir -p build/memory/heap
+	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/memory/heap/heap.c -o build/memory/heap/heap.o
+
+build/kernel.o: kernel/kernel.c
+	@echo "[32m[90%](B[m Building kernel/kernel.c..."
+	@mkdir -p build
+	@$(TOOLCHAIN)-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c kernel/kernel.c -o build/kernel.o
 

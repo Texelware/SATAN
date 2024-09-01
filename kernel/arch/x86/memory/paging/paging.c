@@ -34,6 +34,8 @@ struct page_table *paging_new_table(uint8_t flags)
         offset += (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE);
         paging_get_directory(table)[i] = (uint32_t)entry | flags | PAGING_IS_WRITEABLE;
     }
+
+    return table;
 }
 
 void paging_switch(struct page_table *table)
