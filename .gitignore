@@ -8,4 +8,4 @@ bin/
 build/
 
 #ignore the makefiles
-Makefile*
+Makefile
