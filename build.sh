@@ -48,8 +48,8 @@ generateMakefile() {
 	TAB="$(printf '\t')"
 	cat > Makefile <<-EOF
 	OBJECTS = ${objects[*]}
-    INCLUDES = -I./kernel/arch/$ARCH
-	FLAGS = -Ikernel -I"kernel/arch/$ARCH " -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
+    INCLUDES = -Ikernel -I"kernel/arch/$ARCH" -Iinc
+	FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0
 	LINKER_FLAGS = -O0
 	.PHONY: all
 	all: bin/os.bin
