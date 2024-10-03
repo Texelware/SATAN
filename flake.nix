@@ -20,6 +20,7 @@
               gnumake
               nasm
               qemu
+              clang
               pkgs-crosssystem.buildPackages.gcc
             ];
           };

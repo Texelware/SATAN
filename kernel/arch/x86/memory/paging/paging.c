@@ -3,18 +3,14 @@
 #include "status.h"
 
 #define PAGING_TOTAL_ENTRIES_PER_TABLE 1024
-#define PAGING_ENTRY_ADDRESS_MASK 0xfffff000
-
-inline static void *paging_get_entry_address(size_t entry) {
-    return (void*)(entry & PAGING_ENTRY_ADDRESS_MASK);
-}
 
 void enable_paging();
 void paging_load_directory(size_t directory);
 void paging_set_table_entry(size_t directory_address, size_t table_offset, size_t value);
 size_t paging_current_page_table = 0;
 
-size_t paging_init() {
+size_t paging_init(size_t kernel_size) {
+    
     size_t kernel_address_space = paging_new_table(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
     paging_switch(kernel_address_space);
     enable_paging();
@@ -23,17 +19,17 @@ size_t paging_init() {
 
 size_t paging_new_table(uint8_t flags)
 {
-    uint32_t *table = kmalloc(sizeof(uint32_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
+    size_t *table = kmalloc(sizeof(size_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
     int offset = 0;
     for (int i = 0; i < PAGING_TOTAL_ENTRIES_PER_TABLE; i++)
     {
-        uint32_t *entry = kmalloc(sizeof(uint32_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
+        size_t *entry = kmalloc(sizeof(size_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
         for (int b = 0; b < PAGING_TOTAL_ENTRIES_PER_TABLE; b++)
         {
             entry[b] = (offset + (b * PAGING_PAGE_SIZE)) | flags;
         }
         offset += (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE);
-        table[i] = (uint32_t)entry | flags | PAGING_IS_WRITEABLE;
+        table[i] = (size_t)entry | flags | PAGING_IS_WRITEABLE;
     }
 
     return (size_t)table;

@@ -13,7 +13,7 @@
 
 #define PAGING_PAGE_SIZE 4096
 
-size_t paging_init();
+size_t paging_init(size_t kernel_size);
 
 size_t paging_new_table(uint8_t flags);
 void paging_switch(size_t table);
