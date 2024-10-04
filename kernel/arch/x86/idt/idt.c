@@ -1,8 +1,11 @@
 #include "idt/idt.h"
-#include "config.h"
 #include "kernel.h"
 #include "memory/memory.h"
 #include "io/io.h"
+
+#define SATAN_IDT_ENTRIES 256
+#define SATAN_TOTAL_INTERRUPTS 512
+#define KERNEL_CODE_SELECTOR 8
 
 struct idt_desc
 {
@@ -57,7 +60,7 @@ void idt_set(int interrupt_no, void *address)
 
 void idt_init()
 {
-    memset(idt_descriptors, 0 , sizeof(idt_descriptors));
+    memset(idt_descriptors, 0, sizeof(idt_descriptors));
     idtr_descriptor.limit = sizeof(idt_descriptors) - 1;
     idtr_descriptor.base = (uint32_t)idt_descriptors;
 

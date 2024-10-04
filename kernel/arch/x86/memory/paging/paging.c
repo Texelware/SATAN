@@ -9,7 +9,7 @@ void paging_load_directory(size_t directory);
 void paging_set_table_entry(size_t directory_address, size_t table_offset, size_t value);
 size_t paging_current_page_table = 0;
 
-size_t paging_init(size_t kernel_size) {
+size_t paging_init() {
     
     size_t kernel_address_space = paging_new_table(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
     paging_switch(kernel_address_space);

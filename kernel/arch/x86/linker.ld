@@ -1,8 +1,13 @@
 ENTRY(_start)
-OUTPUT_FORMAT(binary)
 SECTIONS
 {
     . = 1M;
+   .boot :
+    {
+        /* ensure that the multiboot header is at the beginning */
+        *(.multiboot2_header)
+    }
+
     .text : ALIGN(4096)
     {
         *(.text)

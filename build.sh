@@ -58,25 +58,22 @@ generateMakefile() {
 	clean:
 	${TAB}@rm -rf bin
 	${TAB}@rm -rf build
-	${TAB}@echo
+	${TAB}@echo "${green}Cleaned!${normal}"
 
-	bin/os.bin: bin/boot.bin bin/kernel.bin
+	# TODO: Hardcoded to GRUB
+	bin/os.bin: bootloader/$ARCH/boot/grub/grub.cfg bin/kernel.bin
 	${TAB}@echo "${green}Building the system...${normal}"
-	${TAB}@rm -rf bin/os.bin
-	${TAB}@dd if=bin/boot.bin >> bin/os.bin
-	${TAB}@dd if=bin/kernel.bin >> bin/os.bin
-	${TAB}@dd if=/dev/zero bs=512 count=100 >> bin/os.bin
+	${TAB}@rm -rf bin/iso bin/os.iso
+	${TAB}@mkdir -p bin/iso
+	${TAB}@cp -r -T bootloader/$ARCH bin/iso
+	${TAB}@cp bin/kernel.bin bin/iso/boot/kernel.bin
+	${TAB}@grub-mkrescue -o bin/os.iso bin/iso
 	${TAB}@echo Done!
 
-	bin/kernel.bin: \$(OBJECTS)
+	bin/kernel.bin: \$(OBJECTS) kernel/arch/$ARCH/linker.ld
 	${TAB}@echo "${green}Building the kernel...${normal}"
-	${TAB}@\$(TOOLCHAIN)-ld \$(LINKER_FLAGS) -g -relocatable \$(OBJECTS) -o build/kernelfull.o
-	${TAB}@\$(TOOLCHAIN)-gcc \$(LINKER_FLAGS) -T linker.ld -o bin/kernel.bin -ffreestanding -nostdlib build/kernelfull.o
-
-	bin/boot.bin: bootloader/$ARCH/boot.asm
-	${TAB}@echo "${green}Building the bootloader...${normal}"
 	${TAB}@mkdir -p bin
-	${TAB}@nasm -f bin bootloader/$ARCH/boot.asm -o bin/boot.bin
+	${TAB}@\$(TOOLCHAIN)-ld \$(LINKER_FLAGS) -n \$(OBJECTS) -T kernel/arch/$ARCH/linker.ld -o bin/kernel.bin
 	EOF
 
 	((total=${#asm_files[@]} + ${#c_files[@]}))
@@ -116,7 +113,7 @@ build() {
 }
 
 run() {
-	qemu-system-$QEMU_SYSTEM -drive file=bin/os.bin,format=raw
+	qemu-system-$QEMU_SYSTEM -cdrom bin/os.iso
 }
 
 print() {
@@ -169,7 +166,11 @@ repl() {
  	while true; do
  		printf "> "
  		read -e line
- 		command $line
+ 		if [[ $line == \:* ]]; then
+ 			bash -c ${line#\:}
+ 		else
+	 		command $line
+ 		fi
  	done
 }
 
