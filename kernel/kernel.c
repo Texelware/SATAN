@@ -2,7 +2,6 @@
 #include "memory/heap/kheap.h"
 #include "memory/paging/paging.h"
 #include "idt/idt.h"
-#include "io/io.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -84,7 +83,7 @@ void print(const char * str) {
 
 }
 
-static struct page_table *kernel_address_space = 0;
+static size_t kernel_address_space = 0;
 
 void kernel_main()
 {
@@ -100,14 +99,9 @@ void kernel_main()
     enable_interrupts();
 
     // Setup paging
-    kernel_address_space = paging_new_table(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+    kernel_address_space = paging_init();
     paging_set(kernel_address_space, 0x1000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
     paging_set(kernel_address_space, 0x2000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
-    paging_switch(kernel_address_space);
-
-    // Enable paging
-    enable_paging();
-
 
     char *testPtr = (char*)0x1000;
 
@@ -117,6 +111,7 @@ void kernel_main()
     testPtr[3] = 'a';
     testPtr[4] = 'n';
     testPtr[5] = '\n';
+    testPtr[6] = '\0';
 
     print((char*)0x2000);
 }

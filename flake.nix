@@ -20,6 +20,9 @@
               gnumake
               nasm
               qemu
+              clang
+              libisoburn mtools
+              pkgs-crosssystem.buildPackages.grub2
               pkgs-crosssystem.buildPackages.gcc
             ];
           };

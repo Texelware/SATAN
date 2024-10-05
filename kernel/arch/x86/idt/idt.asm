@@ -13,6 +13,7 @@ global disable_interrupts
 
 enable_interrupts:
     sti
+    hlt
     ret
 
 disable_interrupts:
