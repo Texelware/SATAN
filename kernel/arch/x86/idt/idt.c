@@ -1,5 +1,6 @@
 #include "idt/idt.h"
 #include "kernel.h"
+#include "log.h"
 #include "memory/memory.h"
 #include "io/io.h"
 
@@ -33,12 +34,12 @@ extern void no_interrupt();
 //Interrupt zero
 void int_zero()
 {
-    print("Divide by zero error\n");
+    kputs("Divide by zero error");
 }
 
 void int21h_handler()
 {
-    print("keyboard pressed!\n");
+    kputs("keyboard pressed!");
     outb(0x20, 0x20);
 }
 

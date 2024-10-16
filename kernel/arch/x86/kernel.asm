@@ -62,6 +62,7 @@ CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
 section .text
+extern load_bootinfo
 extern kernel_main
 global _start
 _start:
@@ -96,6 +97,8 @@ after_gdt:
     out 0x21, al
     ; End remap of the master PIC
 
+    push ebx
+    call load_bootinfo
     call kernel_main
 
     jmp $

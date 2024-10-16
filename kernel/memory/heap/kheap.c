@@ -2,6 +2,7 @@
 #include "heap.h"
 #include "config.h"
 #include "kernel.h"
+#include "log.h"
 #include "memory/memory.h"
 
 struct heap kernel_heap;
@@ -20,11 +21,11 @@ void kheap_init()
 
     if(res < 0)
     {
-        print("Failed to create heap!\n");
+        kputs("Failed to create heap!");
     }
     else
     {
-        print("Kernel heap created successfully!\n");
+        kputs("Kernel heap created successfully!");
     }
 }
 

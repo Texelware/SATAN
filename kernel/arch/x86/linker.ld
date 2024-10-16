@@ -8,27 +8,27 @@ SECTIONS
         *(.multiboot2_header)
     }
 
-    .text : ALIGN(4096)
+    .text :
     {
         *(.text)
     }
 
-    .asm : ALIGN(4096)
+    .asm :
     {
         *(.asm)
     }
 
-    .rodata : ALIGN(4096)
+    .rodata :
     {
         *(.rodata)
     }
 
-    .data : ALIGN(4096)
+    .data :
     {
         *(.data)
     }
 
-    .bss : ALIGN(4096)
+    .bss :
     {
         *(COMMON)
         *(.bss)
