@@ -33,12 +33,12 @@ extern void no_interrupt();
 //Interrupt zero
 void int_zero()
 {
-    kputs("Divide by zero error");
+    kprintln("Divide by zero error");
 }
 
 void int21h_handler()
 {
-    kputs("keyboard pressed!");
+    kprintln("Keyboard pressed!");
     outb(0x20, 0x20);
 }
 

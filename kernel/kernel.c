@@ -10,11 +10,10 @@ static size_t kernel_address_space = 0;
 void kernel_main()
 {
     terminal_initialize();
-    kputs("Hello satan!");
+    kprintln("Hello satan!");
     kprintf("Hey, a number: %32u, negative: %16i and hex: %64x\n", 42, -5, 0xDEADBEEF);
     kprintf("And a char: '%c', and a string: \"%s\"!\n", 'A', "hey!");
-    // print_hex(bootinfo.ram_size);
-    // print("\n");
+    kprintf("%p\n", bootinfo.ram_size);
 
     //Initialize the kernel heap
     kheap_init();
@@ -38,5 +37,5 @@ void kernel_main()
     testPtr[4] = 'n';
     testPtr[5] = '\0';
 
-    kputs((char*)0x2000);
+    kprintln((char*)0x2000);
 }

@@ -166,9 +166,9 @@ repl() {
 	EOF
  	while true; do
  		printf "> "
- 		read -e line
+ 		read -r line
  		if [[ $line == \:* ]]; then
- 			bash -c ${line#\:}
+ 			bash -c "${line#\:}"
  		else
 	 		command $line
  		fi
