@@ -7,4 +7,6 @@
 #define EINVARG 2
 #define ENOMEM 3
 
+#define TRY(op) do { int result = op; if (result != 0) return result; } while (0)
+
 #endif

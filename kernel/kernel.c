@@ -1,20 +1,9 @@
 #include "kernel.h"
-#include "memory/heap/kheap.h"
-#include "memory/paging/paging.h"
-#include "idt/idt.h"
-#include "log.h"
-#include <stdint.h>
+#include <memory/heap/kheap.h>
+#include <memory/paging/paging.h>
+#include <idt/idt.h>
+#include <lib/log.h>
 #include <stddef.h>
-
-size_t strlen(const char * str) {
-    size_t len = 0;
-    while(str[len])
-    {
-        len++;
-    }
-    return len;
-
-}
 
 static size_t kernel_address_space = 0;
 
@@ -22,6 +11,7 @@ void kernel_main()
 {
     terminal_initialize();
     kputs("Hello satan!");
+    kprintf("Hey, a number: %32u, negative: %16i and hex: %64x\n", 42, -5, 0xDEADBEEF);
     // print_hex(bootinfo.ram_size);
     // print("\n");
 

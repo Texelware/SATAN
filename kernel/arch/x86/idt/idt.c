@@ -1,8 +1,7 @@
-#include "idt/idt.h"
-#include "kernel.h"
-#include "log.h"
-#include "memory/memory.h"
-#include "io/io.h"
+#include <idt/idt.h>
+#include <lib/log.h>
+#include <lib/memory.h>
+#include <io/io.h>
 
 #define SATAN_IDT_ENTRIES 256
 #define SATAN_TOTAL_INTERRUPTS 512

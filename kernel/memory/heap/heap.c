@@ -1,7 +1,8 @@
 #include "heap.h"
-#include "kernel.h"
-#include "status.h"
-#include "memory/memory.h"
+#include <config.h>
+#include <stdint.h>
+#include <status.h>
+#include <lib/memory.h>
 #include <stdbool.h>
 
 
@@ -42,10 +43,7 @@ int heap_create(struct heap *heap, void *ptr, void *end, struct heap_table *tabl
     heap->table = table;
 
     res = heap_validate_table(ptr, end, table);
-    if (res < 0)
-    {
-        goto out;
-    }
+    if (res != 0) goto out;
 
     size_t table_size = sizeof(HEAP_BLOCK_TABLE_ENTRY) * table->total;
     memset(table->entries, HEAP_BLOCK_TABLE_ENTRY_FREE, table_size);
@@ -141,10 +139,7 @@ void *heap_malloc_blocks(struct heap *heap, uint32_t total_blocks)
     void *address = 0;
 
     int start_block = heap_get_start_block(heap, total_blocks);
-    if (start_block < 0)
-    {
-        goto out;
-    }
+    if (start_block < 0) goto out;
 
     address = heap_block_to_address(heap, start_block);
 

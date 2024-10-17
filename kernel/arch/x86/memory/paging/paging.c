@@ -1,6 +1,6 @@
 #include "paging.h"
-#include "memory/heap/kheap.h"
-#include "status.h"
+#include <memory/heap/kheap.h>
+#include <status.h>
 
 #define PAGING_TOTAL_ENTRIES_PER_TABLE 1024
 

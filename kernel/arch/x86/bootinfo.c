@@ -1,5 +1,5 @@
-#include "kernel.h"
-#include "memory/memory.h"
+#include <kernel.h>
+#include <lib/memory.h>
 #include <stdint.h>
 
 struct bootinfo bootinfo;

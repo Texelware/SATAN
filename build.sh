@@ -49,8 +49,9 @@ generateMakefile() {
 	cat > Makefile <<-EOF
 	OBJECTS = ${objects[*]}
     INCLUDES = -Ikernel -I"kernel/arch/$ARCH" -Iinc
-	FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0
-	LINKER_FLAGS = -O0
+    # -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions 
+	FLAGS = -O0 -g -ffreestanding -fno-builtin -Wall -Werror -nostdlib -nostartfiles -nodefaultlibs
+	LINKER_FLAGS = -O0 -nostartfiles
 	.PHONY: all
 	all: bin/os.bin
 
@@ -73,7 +74,7 @@ generateMakefile() {
 	bin/kernel.bin: \$(OBJECTS) kernel/arch/$ARCH/linker.ld
 	${TAB}@echo "${green}Building the kernel...${normal}"
 	${TAB}@mkdir -p bin
-	${TAB}@\$(TOOLCHAIN)-ld \$(LINKER_FLAGS) -n \$(OBJECTS) -T kernel/arch/$ARCH/linker.ld -o bin/kernel.bin
+	${TAB}@\$(TOOLCHAIN)-gcc \$(LINKER_FLAGS) -n \$(OBJECTS) -T kernel/arch/$ARCH/linker.ld -o bin/kernel.bin
 	EOF
 
 	((total=${#asm_files[@]} + ${#c_files[@]}))

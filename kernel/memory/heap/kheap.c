@@ -1,9 +1,8 @@
 #include "kheap.h"
 #include "heap.h"
-#include "config.h"
-#include "kernel.h"
-#include "log.h"
-#include "memory/memory.h"
+#include <config.h>
+#include <lib/log.h>
+#include <lib/memory.h>
 
 struct heap kernel_heap;
 struct heap_table kernel_heap_table;
@@ -19,14 +18,8 @@ void kheap_init()
 
     int res = heap_create(&kernel_heap, (void*)(SATAN_HEAP_ADDRESS), end, &kernel_heap_table);
 
-    if(res < 0)
-    {
-        kputs("Failed to create heap!");
-    }
-    else
-    {
-        kputs("Kernel heap created successfully!");
-    }
+    if(res != 0) kputs("Failed to create kernel heap!");
+    else kputs("Kernel heap created successfully!");
 }
 
 void *kmalloc(size_t size)
