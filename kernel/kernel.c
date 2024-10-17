@@ -12,6 +12,7 @@ void kernel_main()
     terminal_initialize();
     kputs("Hello satan!");
     kprintf("Hey, a number: %32u, negative: %16i and hex: %64x\n", 42, -5, 0xDEADBEEF);
+    kprintf("And a char: '%c', and a string: \"%s\"!\n", 'A', "hey!");
     // print_hex(bootinfo.ram_size);
     // print("\n");
 

@@ -83,6 +83,19 @@ int kprintf(const char* format, ...) {
                 else return -EINVARG;
                 TRY(print_radix(arg, 16));
             }
+            else if (*format == 'c')
+            {
+                format++;
+                if (size != 0) return -EINVARG;
+                TRY(kputchar(va_arg(args, uint32_t)));
+            }
+            else if (*format == 's')
+            {
+                format++;
+                if (size != 0) return -EINVARG;
+                const char *msg = va_arg(args, const char*);
+                while (*msg) TRY(kputchar(*msg++));
+            }
             else return -EINVARG;
         }
         else TRY(kputchar(*format++));
