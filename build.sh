@@ -165,12 +165,15 @@ repl() {
 	Type help for list of availble commands
 	EOF
  	while true; do
- 		printf "> "
- 		read -r line
- 		if [[ $line == \:* ]]; then
- 			bash -c "${line#\:}"
+		if command -v zsh &> /dev/null; then
+			REPLY=$(zsh -c 'export REPLY="" && vared -p "> " REPLY && echo $REPLY')
+		else
+			read -e -r -p "> "
+		fi
+ 		if [[ $REPLY == \:* ]]; then
+ 			bash -c "${REPLY#\:}"
  		else
-	 		command $line
+	 		command $REPLY
  		fi
  	done
 }
