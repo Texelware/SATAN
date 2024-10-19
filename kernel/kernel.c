@@ -11,9 +11,6 @@ static size_t kernel_address_space = 0;
 void kernel_main()
 {
     kprintln("Hello satan!");
-    kprintf("Hey, a number: %32u, negative: %16i and hex: %64x\n", 42, -5, 0xDEADBEEF);
-    kprintf("And a char: '%c', and a string: \"%s\"!\n", 'A', "hey!");
-    kprintf("%p\n", bootinfo.page_info_table_address);
 
     //Initialize the kernel heap
     kheap_init();

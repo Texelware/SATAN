@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 struct bootinfo {
-    size_t page_info_table_address;  // Physical address of page info table
+    size_t page_count;
 };
 
 extern struct bootinfo bootinfo;

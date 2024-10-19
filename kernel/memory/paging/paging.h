@@ -5,6 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+struct PageInfo {
+    size_t uses;
+};
+
 enum
 {
     PAGING_FLAG_PRESENT = 0b00000001,
@@ -16,6 +20,8 @@ enum
 };
 
 size_t paging_init();
+
+extern size_t page_info_table_address;
 
 size_t paging_new_table();
 void paging_switch(size_t table);

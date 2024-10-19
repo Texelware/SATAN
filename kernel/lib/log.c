@@ -23,8 +23,8 @@ static int print_radix(uint64_t number, uint8_t radix, uint8_t min_width)
     if (radix > strlen(charmap)) return -EINVARG;
 
     uint64_t max = 1;
-    while (min_width-- > 1) max *= radix;
-    while (max * radix < number) max *= radix;
+    // while (min_width-- > 1) max *= radix;
+    while (max * radix <= number) max *= radix;
     do {
         TRY(kputchar(charmap[(number / max) % radix]));
         max /= radix;
@@ -94,7 +94,7 @@ int kprintf(const char* format, ...)
             else if (*format == 'x')
             {
                 format++;
-                uint64_t arg = INT64_MIN;
+                uint64_t arg = UINT64_MAX;
                 if (size == 8) arg = va_arg(args, uint32_t);
                 else if (size == 16) arg = va_arg(args, uint32_t);
                 else if (size == 32) arg = va_arg(args, uint32_t);
@@ -105,7 +105,7 @@ int kprintf(const char* format, ...)
             else if (*format == 'b')
             {
                 format++;
-                uint64_t arg = INT64_MIN;
+                uint64_t arg = UINT64_MAX;
                 if (size == 8) arg = va_arg(args, uint32_t);
                 else if (size == 16) arg = va_arg(args, uint32_t);
                 else if (size == 32) arg = va_arg(args, uint32_t);

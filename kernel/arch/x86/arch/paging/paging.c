@@ -15,7 +15,9 @@
 void enable_paging();
 void paging_load_directory(size_t directory);
 void paging_set_table_entry(size_t directory_address, size_t table_offset, size_t value);
+
 size_t paging_current_page_table = 0;
+size_t page_info_table_address;
 
 static int convert_flags(uint8_t *flags)
 {
@@ -48,9 +50,9 @@ size_t paging_new_table()
         size_t *entry = kmalloc(sizeof(size_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
         for (int b = 0; b < PAGING_TOTAL_ENTRIES_PER_TABLE; b++)
         {
-            entry[b] = (offset + (b * PAGING_PAGE_SIZE)) | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE;
+            entry[b] = (offset + (b * PAGE_SIZE)) | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE;
         }
-        offset += (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE);
+        offset += (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGE_SIZE);
         table[i] = (size_t)entry | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE;
     }
 
@@ -65,8 +67,8 @@ void paging_switch(size_t table)
 
 static void paging_get_indexes(size_t virtual_address, size_t *directory_index_out, size_t *table_index_out)
 {
-    *directory_index_out = ((size_t)virtual_address / (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE));
-    *table_index_out = ((size_t)virtual_address % (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE) / PAGING_PAGE_SIZE);
+    *directory_index_out = ((size_t)virtual_address / (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGE_SIZE));
+    *table_index_out = ((size_t)virtual_address % (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGE_SIZE) / PAGE_SIZE);
 }
 
 int paging_set(size_t page_table, size_t virtual_address, size_t physical_address, uint8_t flags)
@@ -82,5 +84,5 @@ int paging_set(size_t page_table, size_t virtual_address, size_t physical_addres
 
 bool paging_is_aligned(size_t addr)
 {
-    return (addr % PAGING_PAGE_SIZE) == 0;
+    return (addr % PAGE_SIZE) == 0;
 }

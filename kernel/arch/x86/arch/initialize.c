@@ -1,8 +1,10 @@
 #include "lib/elf.h"
 #include "multiboot2.h"
+#include "paging/paging_config.h"
 #include <kernel.h>
 #include <lib/log.h>
 #include <lib/memory.h>
+#include <memory/paging/paging.h>
 #include <status.h>
 #include <stdint.h>
 
@@ -85,33 +87,66 @@ int initialize(uint32_t magic, struct multiboot_info *multiboot_info)
     kprintf("Multiboot info structure end: %32uKiB\n", ((size_t)multiboot_info + multiboot_info->total_size) / 1024);
     kprintf("Total memory size: %32uMiB\n", address_limit / 1024 / 1024);
 
-    if (multiboot_info_start < kernel_top || multiboot_info_start - kernel_top > address_limit - multiboot_info_end) bootinfo.page_info_table_address = kernel_top;
-    else bootinfo.page_info_table_address = multiboot_info_end;
+    if (multiboot_info_start < kernel_top || multiboot_info_start - kernel_top > address_limit - multiboot_info_end) page_info_table_address = kernel_top;
+    else page_info_table_address = multiboot_info_end;
+    bootinfo.page_count = address_limit / PAGE_SIZE;
+    if (page_info_table_address + bootinfo.page_count * sizeof(struct PageInfo) > address_limit)
+    {
+        kprintln("Can't create page info table, not enough RAM!");
+        return -ENOMEM;
+    }
+    struct PageInfo *page_info_table = (struct PageInfo *)page_info_table_address;
+    for (size_t i = 0; i < bootinfo.page_count; i++)
+    {
+        page_info_table[i].uses = 1;
+    }
 
-    // {
-    //     multiboot_memory_map_t *mmap;
-
-    //     kprintf("mmap\n");
-
-    //     for (mmap = mmap_tag->entries;
-    //          (multiboot_uint8_t *)mmap < (multiboot_uint8_t *)tag + tag->size;
-    //          mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap_tag->entry_size))
-    //         kprintf(" base_addr = 0x%32x%32x,"
-    //                 " length = 0x%32x%32x, type = 0x%32x\n",
-    //                 (unsigned)(mmap->addr >> 32),
-    //                 (unsigned)(mmap->addr & 0xffffffff),
-    //                 (unsigned)(mmap->len >> 32),
-    //                 (unsigned)(mmap->len & 0xffffffff),
-    //                 (unsigned)mmap->type);
-    // }
-    // {
-    //     Elf32_Shdr *string_table = (Elf32_Shdr *)(((uint8_t *)elf_sections_tag->sections) + elf_sections_tag->shndx * elf_sections_tag->entsize);
-    //     kprintf("%32u sections, shndx: %32u\nname of the string table: %s\n", sections_tag->num, sections_tag->shndx, string_table->sh_addr + string_table->sh_name);
-    //     Elf32_Shdr *sections = (Elf32_Shdr *)sections_tag->sections;
-    //     for (size_t i = 0; i < sections_tag->num; i++)
-    //     {
-    //         kprintf("%s", sections[i].sh_name)
-    //     }
-    // }
+    {
+        for (multiboot_memory_map_t *mmap = mmap_tag->entries;
+             (uint8_t *)mmap < (uint8_t *)mmap_tag + mmap_tag->size;
+             mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap_tag->entry_size))
+        {
+            if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE)
+            {
+                size_t lower_page = mmap->addr / PAGE_SIZE + (mmap->addr % PAGE_SIZE != 0);
+                size_t upper_page = (mmap->addr + mmap->len) / PAGE_SIZE;
+                for (size_t i = lower_page; i < upper_page; i++)
+                    page_info_table[i].uses = 0;
+            }
+        }
+    }
+    {
+        // Elf32_Shdr *string_table = (Elf32_Shdr *)(((uint8_t *)elf_sections_tag->sections) + elf_sections_tag->shndx * elf_sections_tag->entsize);
+        for (size_t i = 0; i < elf_sections_tag->num; i++)
+        {
+            Elf32_Shdr *section = (Elf32_Shdr *)(((uint8_t *)elf_sections_tag->sections) + i * elf_sections_tag->entsize);
+            size_t upper_addr = section->sh_addr + section->sh_size;
+            size_t lower_page = section->sh_addr / PAGE_SIZE;
+            size_t upper_page = upper_addr / PAGE_SIZE + (upper_addr % PAGE_SIZE != 0);
+            for (size_t i = lower_page; i < upper_page; i++)
+            {
+                if (i >= bootinfo.page_count)
+                {
+                    kprintln("Kernel location is outside of the memory!");
+                    return -EINVARG;
+                }
+                page_info_table[i].uses = 1;
+            }
+        }
+    }
+    {
+        size_t upper_addr = page_info_table_address + bootinfo.page_count * sizeof(struct PageInfo);
+        size_t lower_page = page_info_table_address / PAGE_SIZE;
+        size_t upper_page = upper_addr / PAGE_SIZE + (upper_addr % PAGE_SIZE != 0);
+        for (size_t i = lower_page; i < upper_page; i++)
+        {
+            if (i >= bootinfo.page_count)
+            {
+                kprintln("Page info table is outside of the memory!");
+                return -ENOMEM;
+            }
+            page_info_table[i].uses = 1;
+        }
+    }
     return 0;
 }
