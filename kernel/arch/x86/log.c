@@ -44,7 +44,7 @@ int kputchar(char ch)
     return 0;
 }
 
-int terminal_initialize()
+void terminal_initialize()
 {
     video_mem = (uint16_t*)0xb8000;
 
@@ -59,5 +59,4 @@ int terminal_initialize()
             put_char_at(x , y , ' ' , 0);
         }
     }
-    return 0;
 }

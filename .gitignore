@@ -1,6 +1,9 @@
 # Ignore any vscode related directories
 .vscode/
 
+# And clangd
+.cache
+
 # Ignore the bin directory
 bin/
 

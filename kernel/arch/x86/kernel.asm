@@ -61,25 +61,31 @@ gdt_descriptor:
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
 
+section .initial_stack
+times 2048 db 0
+initial_stack_top:
+
 section .text
-extern load_bootinfo
+extern initialize
 extern kernel_main
 global _start
 _start:
     lgdt[gdt_descriptor]
 
-    mov ax, DATA_SEG
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+    mov cx, DATA_SEG
+    mov ds, cx
+    mov es, cx
+    mov fs, cx
+    mov gs, cx
+    mov ss, cx
 
     jmp CODE_SEG:after_gdt
 
 after_gdt:
-    mov ebp, 0x00200000
+    mov ebp, initial_stack_top
     mov esp, ebp
+    push ebx
+    push eax
 
     ; Enable the A20 line
     in al, 0x92
@@ -97,8 +103,10 @@ after_gdt:
     out 0x21, al
     ; End remap of the master PIC
 
-    push ebx
-    call load_bootinfo
+    call initialize
+    test eax, eax
+    jne halt
     call kernel_main
-
     jmp $
+halt:
+    hlt

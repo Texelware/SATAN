@@ -33,4 +33,9 @@ SECTIONS
         *(COMMON)
         *(.bss)
     }
+
+    .initial_stack :
+    {
+        *(.initial_stack)
+    }
 }

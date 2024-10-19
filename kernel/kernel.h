@@ -4,8 +4,7 @@
 #include <stddef.h>
 
 struct bootinfo {
-    size_t ram_size;  // Total amount of RAM available
-    size_t ram_start; // End of the kernel, start of free space
+    size_t page_info_table_address;  // Physical address of page info table
 };
 
 extern struct bootinfo bootinfo;
