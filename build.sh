@@ -34,12 +34,12 @@ generateMakefile() {
 	c_files=()
 	objects=("build/arch/$ARCH/kernel.asm.o")
 
-	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm \( -path "kernel/arch/$ARCH/*" -o ! -path "kernel/arch/*" \)); do
+	for file in $(find kernel -type f -name '*.asm' ! -name kernel.asm \( -path "kernel/arch/$ARCH/arch/*" -o ! -path "kernel/arch/*" \)); do
 		asm_files+=($file)
 		objects+=(build${file#kernel}.o)
 	done
 
-	for file in $(find kernel -type f -name '*.c'); do
+	for file in $(find kernel -type f -name '*.c' \( -path "kernel/arch/$ARCH/arch/*" -o ! -path "kernel/arch/*" \)); do
 		c_files+=($file)
 		object=${file#kernel}
 		objects+=(build${object%.c}.o)

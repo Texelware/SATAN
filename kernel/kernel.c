@@ -25,8 +25,8 @@ void kernel_main()
 
     // Setup paging
     kernel_address_space = paging_init();
-    paging_set(kernel_address_space, 0x1000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
-    paging_set(kernel_address_space, 0x2000, 0x8000, PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE);
+    paging_set(kernel_address_space, 0x1000, 0x8000, PAGING_FLAG_PRESENT | PAGING_FLAG_WRITEABLE);
+    paging_set(kernel_address_space, 0x2000, 0x8000, PAGING_FLAG_PRESENT);
 
     char *testPtr = (char*)0x1000;
 

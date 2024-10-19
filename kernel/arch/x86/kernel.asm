@@ -103,6 +103,10 @@ after_gdt:
     out 0x21, al
     ; End remap of the master PIC
 
+    mov eax, cr0
+    or eax, 1 << 16
+    mov cr0, eax
+
     call initialize
     test eax, eax
     jne halt

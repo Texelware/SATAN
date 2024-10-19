@@ -54,6 +54,16 @@ int kprintf(const char* format, ...)
                 size += *format++ - '0';
             }
 
+            uint8_t padding = 0;
+            if (*format == '.') {
+                format++;
+                while (isdigit((int)*format))
+                {
+                    padding *= 10;
+                    padding += *format++ - '0';
+                }
+            }
+
             if (*format == 'u')
             {
                 format++;
@@ -63,7 +73,7 @@ int kprintf(const char* format, ...)
                 else if (size == 32) arg = va_arg(args, uint32_t);
                 else if (size == 64) arg = va_arg(args, uint64_t);
                 else return -EINVARG;
-                TRY(print_radix(arg, 10, 0));
+                TRY(print_radix(arg, 10, padding));
             }
             else if (*format == 'i')
             {
@@ -79,7 +89,7 @@ int kprintf(const char* format, ...)
                     TRY(kputchar('-'));
                     arg = -arg;
                 }
-                TRY(print_radix(arg, 10, 0));
+                TRY(print_radix(arg, 10, padding));
             }
             else if (*format == 'x')
             {
@@ -90,25 +100,36 @@ int kprintf(const char* format, ...)
                 else if (size == 32) arg = va_arg(args, uint32_t);
                 else if (size == 64) arg = va_arg(args, uint64_t);
                 else return -EINVARG;
-                TRY(print_radix(arg, 16, 0));
+                TRY(print_radix(arg, 16, padding));
+            }
+            else if (*format == 'b')
+            {
+                format++;
+                uint64_t arg = INT64_MIN;
+                if (size == 8) arg = va_arg(args, uint32_t);
+                else if (size == 16) arg = va_arg(args, uint32_t);
+                else if (size == 32) arg = va_arg(args, uint32_t);
+                else if (size == 64) arg = va_arg(args, uint64_t);
+                else return -EINVARG;
+                TRY(print_radix(arg, 2, padding));
             }
             else if (*format == 'p')
             {
                 format++;
-                if (size != 0) return -EINVARG;
+                if (size != 0 || padding != 0) return -EINVARG;
                 TRY(kprint("0x"));
                 TRY(print_radix(va_arg(args, size_t), 16, sizeof(size_t) * 2));
             }
             else if (*format == 'c')
             {
                 format++;
-                if (size != 0) return -EINVARG;
+                if (size != 0 || padding != 0) return -EINVARG;
                 TRY(kputchar(va_arg(args, uint32_t)));
             }
             else if (*format == 's')
             {
                 format++;
-                if (size != 0) return -EINVARG;
+                if (size != 0 || padding != 0) return -EINVARG;
                 TRY(kprint(va_arg(args, const char*)));
             }
             else return -EINVARG;

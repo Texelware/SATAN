@@ -1,7 +1,7 @@
 #include <idt/idt.h>
+#include <io/io.h>
 #include <lib/log.h>
 #include <lib/memory.h>
-#include <io/io.h>
 
 #define SATAN_IDT_ENTRIES 256
 #define SATAN_TOTAL_INTERRUPTS 512
@@ -11,7 +11,7 @@ struct idt_desc
 {
     uint16_t offset_1; // Offset bits 0 - 15
     uint16_t selector; // Selector thats in our GDT
-    uint8_t zero; // Does nothing, unused set to zero
+    uint8_t zero;      // Does nothing, unused set to zero
     uint8_t type_attr; // Descriptor type and attributes
     uint16_t offset_2; // Offset bits 16-31
 
@@ -20,7 +20,7 @@ struct idt_desc
 struct idtr_desc
 {
     uint16_t limit; // Size of descriptor table -1
-    uint32_t base; // Base address of the start of the interrupt descriptor table
+    uint32_t base;  // Base address of the start of the interrupt descriptor table
 } __attribute__((packed));
 
 struct idt_desc idt_descriptors[SATAN_TOTAL_INTERRUPTS];
@@ -30,7 +30,7 @@ extern void idt_load(struct idtr_desc *ptr);
 extern void int21h();
 extern void no_interrupt();
 
-//Interrupt zero
+// Interrupt zero
 void int_zero()
 {
     kprintln("Divide by zero error");
@@ -39,6 +39,16 @@ void int_zero()
 void int21h_handler()
 {
     kprintln("Keyboard pressed!");
+    outb(0x20, 0x20);
+}
+
+void page_fault(uint32_t error_code)
+{
+    kprintf("Page fault!\nError code:\n%32.32b\n", error_code);
+    kprintln("                ^        ^^IRUWP");
+    kprintln("               SGX      SSPK    ");
+    while (1)
+        continue;
     outb(0x20, 0x20);
 }
 
@@ -65,12 +75,13 @@ void idt_init()
     idtr_descriptor.base = (uint32_t)idt_descriptors;
 
     //---------------------Set your interrupts-------------------
-    for(int i = 0; i < SATAN_TOTAL_INTERRUPTS; i++)
+    for (int i = 0; i < SATAN_TOTAL_INTERRUPTS; i++)
     {
         idt_set(i, no_interrupt);
     }
 
     idt_set(0, int_zero);
+    idt_set(0x0e, page_fault);
     idt_set(0x21, int21h);
 
     // Load the interrupt descriptor table
